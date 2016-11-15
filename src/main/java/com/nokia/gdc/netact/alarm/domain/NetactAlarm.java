@@ -3,9 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.nokia.gdc.domain;
+package com.nokia.gdc.netact.alarm.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.nokia.gdc.common.domain.EnterpriseBus;
+import com.nokia.gdc.common.domain.MessageBus;
+import com.nokia.gdc.common.domain.EventCDR;
+import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -14,6 +18,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +28,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor
-public class NetactAlarm {
+public class NetactAlarm implements EnterpriseBus {
 
     private final InetSocketAddress remoteAddress;
     private Long alarmNumber;
@@ -52,16 +57,18 @@ public class NetactAlarm {
         this(null,null);
     }
     
-    public String[] CSV(){
-        String[] csv = new String[17];
+    @Override
+    public String toString(){
+        //alarmnumber,severity,maintenanceRegion,siteName,dn,alarmText,startTime,clearedTime,intID,notifID,pcText,supplInfo,diagInfo,userInfo,objectName,alarmType,message
+        String[] csv = new String[16];
         csv[0] = String.valueOf(alarmNumber);
         csv[1] = severity;
         csv[2] = maintenanceRegion;
         csv[3] = siteName;
         csv[4] = dn;
         csv[5] = alarmText;
-        csv[6] = startTime.toString();
-        csv[7] = clearedTime.toString();
+        csv[6] = startTime != null?startTime.toString():"";
+        csv[7] = clearedTime !=null?clearedTime.toString():"";
         csv[8] = String.valueOf(intID);
         csv[9] = String.valueOf(notifID);
         csv[10] = pcText;
@@ -70,8 +77,7 @@ public class NetactAlarm {
         csv[13] = userInfo;
         csv[14] = objectName;
         csv[15] = alarmType;
-        csv[16] = message;
-        return csv;
+        return String.join(",", csv);
     }
 
     /*
@@ -111,6 +117,7 @@ Object objectName alarmType
         String line = null;
         int lineNumber = 100;
         while ((line = bufReader.readLine()) != null) {
+            line = line.replaceAll("( )+", " ");
             if (line.contains("#S#")) {
                 lineNumber = 1;
             } else {
@@ -208,6 +215,13 @@ Object objectName alarmType
         }else{
             return "close";
         }
+    }
+
+    @Override
+    public List<MessageBus> pullMessage() {
+        MessageBus[] listMessage = new MessageBus[1];
+        listMessage[0] = new MessageBus("com.nokia.gdc.AlarmLoggerService", this);
+        return Arrays.asList(listMessage);
     }
 
 }

@@ -8,6 +8,10 @@ server:
         key-store-password: password
         keyStoreType: PKCS12
         keyAlias: tomcat
+        
+logging:
+    level:
+        com.nokia.gdc.*: DEBUG
                             
 producer:
     bootstrap.servers: 103.49.105.21:9092

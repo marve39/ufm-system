@@ -3,23 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.nokia.gdc.services;
+package com.nokia.gdc.ticket.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import com.nokia.gdc.NetactAlarmConnector;
-import com.nokia.gdc.domain.NetactAlarm;
-import com.nokia.gdc.repositories.TroubleTicketRepository;
+import com.nokia.gdc.netact.alarm.domain.NetactAlarm;
+import com.nokia.gdc.ticket.repositories.TroubleTicketRepository;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.nokia.gdc.domain.TroubleTicket;
+import com.nokia.gdc.ticket.domain.TroubleTicket;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 /**
@@ -27,18 +28,31 @@ import org.springframework.stereotype.Service;
  * @author Arindra
  */
 @Service
-public class TicketServiceBroker implements Runnable {
+public class AlarmTroubleTicketService implements Runnable {
 
     @Autowired
     TroubleTicketRepository ttRepo;
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Override
     public void run() {
+        long threadId = Thread.currentThread().getId();
+        logger.info("[ThreadID:" + threadId + ",errorcode:0,message:Alarm Ticket Service started... ]");
+
+        ObjectMapper mapper = new ObjectMapper();
+        NetactAlarm alarmObject;
         while (true) {
-            NetactAlarm alarmObject;
             try {
                 alarmObject = NetactAlarmConnector.alarmObjectQueue.poll(1, TimeUnit.MINUTES);
                 if (alarmObject != null) {
+                    String jsonMessage;
+                    try {
+                        jsonMessage = mapper.writeValueAsString(alarmObject);
+                    } catch (JsonProcessingException ex) {
+                        jsonMessage = "Message Cannot translated";
+                    }
+                    logger.debug("[ThreadID:" + threadId + ",errorcode:0,message:Object Recieved (" + jsonMessage + ") ]");
 
                     //    ttRepo.save(this);
                     try {
@@ -52,7 +66,8 @@ public class TicketServiceBroker implements Runnable {
                         //true = append file
                         FileWriter fileWritter = new FileWriter(file.getName(), true);
                         BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
-                        bufferWritter.write(Arrays.toString(alarmObject.CSV()));
+                        //bufferWritter.write(Arrays.toString(alarmObject.CSV()));
+                        bufferWritter.write("\n");
                         bufferWritter.close();
                     } catch (Exception e) {
                         // do something
@@ -60,7 +75,7 @@ public class TicketServiceBroker implements Runnable {
                     }
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(TicketServiceBroker.class.getName()).log(Level.SEVERE, null, ex);
+                logger.error("[ThreadID:" + threadId + ",errorcode:1301,message:" + ex.getMessage());
             }
         }
     }

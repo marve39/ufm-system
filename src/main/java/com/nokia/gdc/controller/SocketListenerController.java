@@ -6,8 +6,10 @@
 package com.nokia.gdc.controller;
 
 import com.nokia.gdc.NetactAlarmConnector;
-import com.nokia.gdc.domain.NetactSocketServer;
-import com.nokia.gdc.services.TicketServiceBroker;
+import com.nokia.gdc.alarm.services.AlarmLoggerService;
+import com.nokia.gdc.common.services.MessageRouting;
+import com.nokia.gdc.netact.alarm.socket.NetactSocketServer;
+import com.nokia.gdc.ticket.services.AlarmTroubleTicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +24,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class SocketListenerController {
     
     @Autowired
-    TicketServiceBroker ticketServiceBroker;
+    AlarmTroubleTicketService alarmTroubleTicketService;
+    
+    @Autowired
+    MessageRouting messageRouting;
+    
+     @Autowired
+     AlarmLoggerService alarmLoggerService;
     
     @Autowired
     ThreadPoolTaskExecutor taskExecutor;
@@ -36,10 +44,13 @@ public class SocketListenerController {
         return NetactAlarmConnector.socketServer;
     }
     
-    @RequestMapping("/start-queue")
+    @RequestMapping("/start-ef")
     public void createQueueListener() {
         //ticketServiceBroker.setIsStart(true);
-        taskExecutor.execute(ticketServiceBroker);
+      //  taskExecutor.execute(alarmTroubleTicketService);
+        taskExecutor.execute(messageRouting);
+        taskExecutor.execute(alarmLoggerService);
+        
     }
     
     @RequestMapping("/check-queue")

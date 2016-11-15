@@ -3,11 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.nokia.gdc.domain;
+package com.nokia.gdc.netact.alarm.socket;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.nokia.gdc.socket.NetactAlarmForwardingHandler;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
@@ -16,13 +15,14 @@ import java.util.Calendar;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.LineDelimiter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -52,6 +52,8 @@ public class NetactSocketServer {
     private String ALREADY_BOUND = "[FAILED] - Socket Already Bound";
     @JsonIgnore
     private Boolean isAcceptorPrepared = false;
+    
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected NetactSocketServer() {
         this(null);
@@ -92,8 +94,10 @@ public class NetactSocketServer {
         if (!acceptor.isActive()) {
             try {
                 acceptor.bind(new InetSocketAddress(this.port));
+                logger.info("Netact Listener start at port [" + this.getPort() + "]");
             } catch (IOException ex) {
                 this.message = "[FAILED] - " + ex.getMessage();
+                logger.error("FAILED [" + ex.getMessage() + "]");
                 return false;
             }
             createdTime = Calendar.getInstance();
@@ -110,6 +114,7 @@ public class NetactSocketServer {
             acceptor.unbind();
             acceptor.dispose();
             this.message = SUCCESS;
+            logger.info("Netact Listener stop -- [" + this.getPort() + "]");
             return true;
         }
         return false;

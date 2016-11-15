@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.nokia.gdc.repositories;
+package com.nokia.gdc.ticket.repositories;
 
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.transaction.annotation.Transactional;
-import com.nokia.gdc.domain.TroubleTicket;
+import com.nokia.gdc.ticket.domain.TroubleTicket;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,7 +1,8 @@
 package com.nokia.gdc;
 
-import com.nokia.gdc.domain.NetactSocketServer;
-import com.nokia.gdc.domain.NetactAlarm;
+import com.nokia.gdc.common.EnterpriseFramework;
+import com.nokia.gdc.netact.alarm.socket.NetactSocketServer;
+import com.nokia.gdc.netact.alarm.domain.NetactAlarm;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.springframework.boot.SpringApplication;
@@ -23,12 +24,13 @@ public class NetactAlarmConnector {
     public final static LinkedBlockingQueue<NetactAlarm> alarmObjectQueue = new LinkedBlockingQueue<NetactAlarm>();
     public final static LinkedBlockingQueue<NetactAlarm> ticketOperationQueue = new LinkedBlockingQueue<NetactAlarm>();
     private static boolean isProducerReady;
+    public final static EnterpriseFramework enterpriseFramework = new EnterpriseFramework();
     
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(1);
-        executor.setMaxPoolSize(1);
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(2);
         executor.setQueueCapacity(100);
         return executor;
     }

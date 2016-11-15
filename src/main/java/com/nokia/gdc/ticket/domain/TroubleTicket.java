@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.nokia.gdc.domain;
+package com.nokia.gdc.ticket.domain;
 
+import com.nokia.gdc.common.domain.EventCDR;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nokia.gdc.utils.JpaConverterJson;

@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.nokia.gdc.domain;
+package com.nokia.gdc.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Arrays;
 import java.util.Date;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -26,5 +27,16 @@ public class EventCDR {
     
      protected EventCDR(){
         this(null,null,0,null,null);
+    }
+    
+    @Override
+    public String toString(){
+        String[] str = new String[5];
+        str[0] = eventType;
+        str[1] = remoteIP;
+        str[2] = String.valueOf(remotePort);
+        str[3] = timeReceived != null?timeReceived.toString():"";
+        str[4] = description;
+        return Arrays.toString(str);
     }
 }
