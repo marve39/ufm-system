@@ -53,7 +53,7 @@ public class NetactSocketServer {
     @JsonIgnore
     private Boolean isAcceptorPrepared = false;
     
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    //private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected NetactSocketServer() {
         this(null);
@@ -94,10 +94,10 @@ public class NetactSocketServer {
         if (!acceptor.isActive()) {
             try {
                 acceptor.bind(new InetSocketAddress(this.port));
-                logger.info("Netact Listener start at port [" + this.getPort() + "]");
+      //          logger.info("Netact Listener start at port [" + this.getPort() + "]");
             } catch (IOException ex) {
                 this.message = "[FAILED] - " + ex.getMessage();
-                logger.error("FAILED [" + ex.getMessage() + "]");
+       //         logger.error("FAILED [" + ex.getMessage() + "]");
                 return false;
             }
             createdTime = Calendar.getInstance();
@@ -114,7 +114,7 @@ public class NetactSocketServer {
             acceptor.unbind();
             acceptor.dispose();
             this.message = SUCCESS;
-            logger.info("Netact Listener stop -- [" + this.getPort() + "]");
+         //   logger.info("Netact Listener stop -- [" + this.getPort() + "]");
             return true;
         }
         return false;

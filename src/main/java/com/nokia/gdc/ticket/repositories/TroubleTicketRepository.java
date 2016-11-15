@@ -20,4 +20,7 @@ import org.springframework.data.repository.query.Param;
 public interface TroubleTicketRepository extends CrudRepository<TroubleTicket, Long> {
     @Query("SELECT tt FROM TroubleTicket tt WHERE LOWER(tt.status) = LOWER(:status) and LOWER(tt.title) = LOWER(:title)")
     public List<TroubleTicket> findTT(@Param("status") String status, @Param("title") String title);
+    
+    @Query("SELECT tt FROM TroubleTicket tt order by tt.timeCreation")
+    public List<TroubleTicket> findAllTT();
 }

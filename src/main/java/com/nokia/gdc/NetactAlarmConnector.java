@@ -29,8 +29,8 @@ public class NetactAlarmConnector {
     @Bean
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setMaxPoolSize(2);
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(3);
         executor.setQueueCapacity(100);
         return executor;
     }

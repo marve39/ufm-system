@@ -47,7 +47,7 @@ public class SocketListenerController {
     @RequestMapping("/start-ef")
     public void createQueueListener() {
         //ticketServiceBroker.setIsStart(true);
-      //  taskExecutor.execute(alarmTroubleTicketService);
+        taskExecutor.execute(alarmTroubleTicketService);
         taskExecutor.execute(messageRouting);
         taskExecutor.execute(alarmLoggerService);
         

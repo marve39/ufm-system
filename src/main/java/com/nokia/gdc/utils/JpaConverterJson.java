@@ -9,11 +9,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 /**
  *
  * @author Arindra
  */
+@Converter
 public class JpaConverterJson implements AttributeConverter<Object, String> {
     private final static ObjectMapper objectMapper = new ObjectMapper();
 

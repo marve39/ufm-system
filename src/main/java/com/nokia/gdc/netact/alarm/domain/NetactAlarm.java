@@ -219,8 +219,9 @@ Object objectName alarmType
 
     @Override
     public List<MessageBus> pullMessage() {
-        MessageBus[] listMessage = new MessageBus[1];
+        MessageBus[] listMessage = new MessageBus[2];
         listMessage[0] = new MessageBus("com.nokia.gdc.AlarmLoggerService", this);
+        listMessage[1] = new MessageBus("com.nokia.gdc.AlarmTroubleTicketService", this);
         return Arrays.asList(listMessage);
     }
 

@@ -44,7 +44,7 @@ public class AlarmTroubleTicketService implements Runnable {
         NetactAlarm alarmObject;
         while (true) {
             try {
-                alarmObject = NetactAlarmConnector.alarmObjectQueue.poll(1, TimeUnit.MINUTES);
+                alarmObject = (NetactAlarm) NetactAlarmConnector.enterpriseFramework.alarmTicketQueue.poll(1, TimeUnit.MINUTES);
                 if (alarmObject != null) {
                     String jsonMessage;
                     try {
@@ -52,27 +52,9 @@ public class AlarmTroubleTicketService implements Runnable {
                     } catch (JsonProcessingException ex) {
                         jsonMessage = "Message Cannot translated";
                     }
-                    logger.debug("[ThreadID:" + threadId + ",errorcode:0,message:Object Recieved (" + jsonMessage + ") ]");
+                    logger.debug("[ThreadID:" + threadId + ",errorcode:0,message:Object Received (" + jsonMessage + ") ]");
 
-                    //    ttRepo.save(this);
-                    try {
-                        File file = new File("test-alarm.csv");
-
-                        //if file doesnt exists, then create it
-                        if (!file.exists()) {
-                            file.createNewFile();
-                        }
-
-                        //true = append file
-                        FileWriter fileWritter = new FileWriter(file.getName(), true);
-                        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
-                        //bufferWritter.write(Arrays.toString(alarmObject.CSV()));
-                        bufferWritter.write("\n");
-                        bufferWritter.close();
-                    } catch (Exception e) {
-                        // do something
-                        e.printStackTrace();
-                    }
+                    doTicketOperation(alarmObject);
                 }
             } catch (InterruptedException ex) {
                 logger.error("[ThreadID:" + threadId + ",errorcode:1301,message:" + ex.getMessage());
@@ -83,14 +65,49 @@ public class AlarmTroubleTicketService implements Runnable {
     private void doTicketOperation(NetactAlarm alarmObject) {
         String title = alarmObject.getTicketTitle();
         List<TroubleTicket> ttList = ttRepo.findTT("open", title);
-        if (ttList.size() == 0) {
-            TroubleTicket tt = new TroubleTicket(title, alarmObject.getSeverity(), alarmObject.getStartTime(), null, alarmObject.getStartTime(), null, this.getClass().toString());
+        ObjectMapper mapper = new ObjectMapper();
+        String jsonMessage;
+        if (ttList.isEmpty()) {
+            TroubleTicket tt = new TroubleTicket(title, alarmObject.getSeverity(), alarmObject.getStartTime(), alarmObject.getStartTime(), null);
             tt.setStatus(alarmObject.ticketStatus());
             tt.addCDR(alarmObject.getEventCDR());
-            ttRepo.save(tt);
+            tt.generateID();
+            tt.setLastTriggerBy(this.getClass().toString());
+            try {
+                jsonMessage = mapper.writeValueAsString(tt);
+            } catch (JsonProcessingException ex) {
+                jsonMessage = "Message Cannot translated";
+            }
+            if (alarmObject.ticketStatus().contains("close")) {
+                logger.warn("No open ticket match for this object = " + jsonMessage);
+            } else {
+                ttRepo.save(tt);
+                logger.info("Ticket created  (" + jsonMessage + ")");
+            }
+
         } else {
-            //alarmObject.
+            if (alarmObject.ticketStatus().contains("open")) {
+                TroubleTicket tt = ttList.get(0);
+                tt.addCDR(alarmObject.getEventCDR());
+                tt.setLastTriggerBy(this.getClass().toString());
+                ttRepo.save(tt);
+            } else if (alarmObject.ticketStatus().contains("close")) {
+                TroubleTicket tt = ttList.get(0);
+                tt.addCDR(alarmObject.getEventCDR());
+                tt.closeTicket(alarmObject.getClearedTime());
+                tt.setLastTriggerBy(this.getClass().toString());
+                ttRepo.save(tt);
+
+                try {
+                    jsonMessage = mapper.writeValueAsString(tt);
+                } catch (JsonProcessingException ex) {
+                    jsonMessage = "Message Cannot translated";
+                }
+                logger.info("Ticket closed  (" + jsonMessage + ")");
+
+            }
         }
+
     }
     /*
     private void createTicket(String title, NetactAlarm alarmObject){
