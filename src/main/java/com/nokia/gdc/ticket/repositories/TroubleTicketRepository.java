@@ -21,6 +21,9 @@ public interface TroubleTicketRepository extends CrudRepository<TroubleTicket, L
     @Query("SELECT tt FROM TroubleTicket tt WHERE LOWER(tt.status) = LOWER(:status) and LOWER(tt.title) = LOWER(:title)")
     public List<TroubleTicket> findTT(@Param("status") String status, @Param("title") String title);
     
-    @Query("SELECT tt FROM TroubleTicket tt order by tt.timeCreation")
+    @Query("SELECT tt FROM TroubleTicket tt order by tt.timeCreation desc")
     public List<TroubleTicket> findAllTT();
+    
+    @Query("SELECT tt FROM TroubleTicket tt where tt.externalTicketID = 'null' order by tt.timeCreation desc")
+    public List<TroubleTicket> findNullAtWTT();
 }

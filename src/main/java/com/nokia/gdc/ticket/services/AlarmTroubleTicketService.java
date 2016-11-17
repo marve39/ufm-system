@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,6 +30,7 @@ import org.springframework.stereotype.Service;
  * @author Arindra
  */
 @Service
+@EnableScheduling
 public class AlarmTroubleTicketService implements Runnable {
 
     @Autowired
@@ -109,26 +112,9 @@ public class AlarmTroubleTicketService implements Runnable {
         }
 
     }
-    /*
-    private void createTicket(String title, NetactAlarm alarmObject){
-        List<TroubleTicket> ttList = ttRepo.findTT("pre-open", title);
-        if (ttList != null){
-            if (ttList.size() > 1){
-                Logger.getLogger(TicketServiceBroker.class.getName()).log(Level.SEVERE, "Double Ticket detected");
-            }else{
-                TroubleTicket tt = ttList.get(0);
-                long diff = alarmObject.getStartTime().getTime() - tt.getFirstOpenAlarmTime().getTime();
-                long diffMinutes = diff / (60 * 1000);
-                if (diffMinutes > 5){
-                    tt.increaseStatus();
-                    tt.addCDR(alarmObject.getEventCDR());
-                    ttRepo.save(tt);
-                }
-            }
-        }else{
-            
-        }
+    
+    @Scheduled(cron = "*/5 * * * * ?")
+    public void syncTroubleTicketWithWTT(){
         
     }
-     */
 }

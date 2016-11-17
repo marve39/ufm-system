@@ -33,4 +33,29 @@ spring:
             ddl-auto: update
             show-sql: true
             dialect: org.hibernate.dialect.H2Dialect
-       # database-platform: org.hibernate.dialect.H2Dialect
+    mvc:
+        view:
+            preffix: /WEB-INF/jsp
+            suffix: .jsp
+
+
+biz:
+    futureware:
+        mantis:
+            rpc:
+                soap:
+                    client:
+                           endpoint: http://gdcindonesia.com:8138/api/soap/mantisconnect.php
+                           user: monitoring
+                           password: monitoring
+
+
+org:
+    apache:
+        axis:
+            AxisProperties:
+                    http:
+                        proxy:
+                            host: 10.144.1.10
+                            port: 8080
+                    
