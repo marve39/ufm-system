@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import com.nokia.gdc.ticket.domain.TroubleTicket;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 
 /**
@@ -28,7 +29,7 @@ public class AlarmTroubleTicketWebController {
     @GetMapping("/t/web/list")
    // @RequestMapping("/list")//
     public String getListTicket(Map<String, Object> model) {
-        List<TroubleTicket> listTT = ttRepo.findAllTT();
+        List<TroubleTicket> listTT = ttRepo.findAllTT(new PageRequest(0,100));
         model.put("listTT", listTT);
         System.out.println("MASUSSSSSSSSSSSSSSSSSSSSSSSSSK");
         return "listTicket";

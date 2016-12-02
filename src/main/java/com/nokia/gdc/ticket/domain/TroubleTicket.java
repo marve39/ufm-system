@@ -8,6 +8,8 @@ package com.nokia.gdc.ticket.domain;
 import com.nokia.gdc.common.domain.EventCDR;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nokia.gdc.utils.JpaBlobConverterJson;
 import com.nokia.gdc.utils.JpaConverterJson;
 import java.util.ArrayList;
@@ -86,6 +88,11 @@ public class TroubleTicket {
     public void closeTicket(Date timeClose){
         this.status = "close";
         this.timeClosed = timeClose;
+    }
+    
+       public String unmarshallObject() throws JsonProcessingException{
+           ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(this);
     }
 
 }

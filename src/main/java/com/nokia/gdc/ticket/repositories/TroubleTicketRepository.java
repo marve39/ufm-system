@@ -11,6 +11,7 @@ import com.nokia.gdc.ticket.domain.TroubleTicket;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.domain.Pageable;
 
 /**
  *
@@ -22,7 +23,7 @@ public interface TroubleTicketRepository extends CrudRepository<TroubleTicket, L
     public List<TroubleTicket> findTT(@Param("status") String status, @Param("title") String title);
     
     @Query("SELECT tt FROM TroubleTicket tt order by tt.timeCreation desc")
-    public List<TroubleTicket> findAllTT();
+    public List<TroubleTicket> findAllTT(Pageable pageable);
     
     @Query("SELECT tt FROM TroubleTicket tt where tt.externalTicketID = 'null' order by tt.timeCreation desc")
     public List<TroubleTicket> findNullAtWTT();
