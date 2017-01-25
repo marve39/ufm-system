@@ -14,6 +14,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,10 +38,10 @@ public class NetactAlarm implements EnterpriseBus {
     private String siteName;
     private String dn;
     private String alarmText;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy HH:mm:ss")
-    private Date startTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy HH:mm:ss")
-    private Date clearedTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy HH:mm:ss", timezone= "GMT+7")
+    private Timestamp startTime;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy HH:mm:ss", timezone= "GMT+7")
+    private Timestamp clearedTime;
     private Long intID;
     private Long notifID;
     private String pcText;
@@ -112,10 +113,20 @@ Object objectName alarmType
 
     
      */
+    /*
+    PC TEXT pcText 	      -> 1
+    Suppl Info additionalInfo -> 2
+    Diag Info diagInfo        -> 3
+    User info userAddInfo     -> 4
+    Object objectName alarmType -> 5
+    */
     public void parseAlarm() throws IOException, ParseException {
         BufferedReader bufReader = new BufferedReader(new StringReader(message.replaceAll("(\\\\r)?\\\\n", System.getProperty("line.separator"))));
         String line = null;
         int lineNumber = 100;
+        int lineType = 0;
+        String strLine = "";
+        String strDrop = "";
         while ((line = bufReader.readLine()) != null) {
             line = line.replaceAll("( )+", " ");
             if (line.contains("#S#")) {
@@ -168,45 +179,80 @@ Object objectName alarmType
                 notifID = Long.parseLong(textSplit[3]);
             }
             
-            if (lineNumber == 7){
-                //PC TEXT Indeterminate
-                //PC TEXT pcText
-                pcText = line.toLowerCase().replaceAll("pc text", "").trim();
+            if (lineNumber >= 7){
+                if (line.toLowerCase().contains("pc text")){
+                    //PC TEXT Indeterminate
+                    //PC TEXT pcText
+                    if (lineType != 1){
+                        strDrop(strLine,lineType);
+                        lineType = 1;
+                        strLine = "";
+                    }
+                    strLine = strLine + line;
+                }else if(line.toLowerCase().contains("suppl info")){
+                    if (lineType != 2){
+                        strDrop(strLine,lineType);
+                        lineType = 2;
+                        strLine = "";
+                    }
+                    strLine = strLine + line;
+                }else if(line.toLowerCase().contains("diag info")){
+                    if (lineType != 3){
+                        strDrop(strLine,lineType);
+                        lineType = 3;
+                        strLine = "";
+                    }
+                    strLine = strLine + line;
+                }else if(line.toLowerCase().contains("user info")){
+                    if (lineType != 4){
+                        strDrop(strLine,lineType);
+                        lineType = 4;
+                        strLine = "";
+                    }
+                    strLine = strLine + line;
+                }else if(line.toLowerCase().contains("object")){
+                    if (lineType != 5){
+                        strDrop(strLine,lineType);
+                        lineType = 5;
+                        strLine = "";
+                    }
+                    strLine = strLine + line;
+                }
+               
             }
-            
-            if (lineNumber == 8){
-                //Suppl Info BL-SY WO-BU 0000 0098 5993 00000000 00000000 00000000
-                //Suppl Info additionalInfo
-                supplInfo = line.toLowerCase().replaceAll("suppl info", "").trim();
-            }
-            
-            if (lineNumber == 9){
-                //Diag Info diagInfo
-                diagInfo = line.toLowerCase().replaceAll("diag info", "").trim();
-            }
-            
-            if (lineNumber == 10){
-                //User info userAddInfo
-                userInfo = line.toLowerCase().replaceAll("user info", "").trim();
-            }
-            if (lineNumber == 11){
-                //Object FBSC_TESTBED EQUIPMENT 
-                //Object objectName alarmType 
+        }
+        this.ticketTitle = siteName + "|" + alarmNumber + "|" + notifID + "|" + alarmText + "|" + dn;
+    }
+    
+    public void strDrop(String strLine, int lineType){
+        
+        String line = strLine.replaceAll("\n", " ").replaceAll("\r", " ").trim();
+        
+        switch (lineType){
+            case 1: pcText = line.substring(7); break;
+            case 2: supplInfo = line.substring(10); break;
+            case 3: diagInfo = line.substring(9); break;
+            case 4: userInfo = line.substring(9); break;
+            case 5: 
                 String[] textSplit = line.trim().split(" ");
                 objectName = textSplit[1];
                 alarmType = textSplit[2];
-            }
-        }
-        this.ticketTitle = siteName + "|" + alarmNumber;
+                break;
+            default: break;
+        } 
+            
+        
     }
 
-    private Date parseDateTime(String date) throws ParseException {
+    private Timestamp parseDateTime(String date) throws ParseException {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        return dateFormat.parse(date);
+        return Timestamp.valueOf(dateFormat.format(dateFormat.parse(date)));
+       // return dateFormat.parse(date);
+       
     }
     
     public EventCDR getEventCDR(){
-        return new EventCDR("alarm",remoteAddress.getAddress().getHostAddress(),remoteAddress.getPort(),startTime,ticketTitle);
+        return new EventCDR("alarm|" + ticketStatus(),remoteAddress.getAddress().getHostAddress(),remoteAddress.getPort(),startTime,ticketTitle);
     }
     
     public String ticketStatus(){

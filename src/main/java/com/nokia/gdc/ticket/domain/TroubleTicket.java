@@ -37,6 +37,7 @@ import org.hibernate.annotations.Type;
 public class TroubleTicket {
 
     private @Id String internalTicketId;
+    private String externalTicketID;
     private String status;
     private final String title;
     private final String severity;
@@ -54,7 +55,7 @@ public class TroubleTicket {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy HH:mm:ss")
     private final Date firstCloseAlarmTime;
     private String lastTriggerBy;
-    private String externalTicketID;
+    
 
     @JsonIgnore
     @Transient

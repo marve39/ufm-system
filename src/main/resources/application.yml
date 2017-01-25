@@ -3,15 +3,22 @@ application:
 
 server:
     port: 8888
-    ssl:
-        key-store: keystore.p12
-        key-store-password: password
-        keyStoreType: PKCS12
-        keyAlias: tomcat
+    #ssl:
+    #    key-store: keystore.p12
+    #    key-store-password: password
+    #    keyStoreType: PKCS12
+    #    keyAlias: tomcat
         
 logging:
-    level:
-        com.nokia.gdc.*: DEBUG
+  file: logs/ufm-system.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework.web: INFO
+    guru.springframework.controllers: INFO
+    org.hibernate: INFO
+    com.nokia.gdc.*: DEBUG
                             
 producer:
     bootstrap.servers: 103.49.105.21:9092
@@ -45,9 +52,9 @@ biz:
             rpc:
                 soap:
                     client:
-                           endpoint: http://gdcindonesia.com:8138/api/soap/mantisconnect.php
-                           user: monitoring
-                           password: monitoring
+                           endpoint: http://gdcindonesia.com:8140/api/soap/mantisconnect.php
+                           user: submiter
+                           password: 12345
 
 
 org:
@@ -58,4 +65,17 @@ org:
                         proxy:
                             host: 10.144.1.10
                             port: 8080
-                    
+
+com:
+    nokia:
+        gdc:
+            ticket:
+                service:
+                    mantisconnect:
+                        project:
+                            id: 1
+                        status:
+                            open:
+                                id: 1
+                            close:
+                                id: 96

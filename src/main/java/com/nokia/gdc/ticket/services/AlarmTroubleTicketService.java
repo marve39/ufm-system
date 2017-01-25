@@ -19,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -35,6 +36,9 @@ public class AlarmTroubleTicketService implements Runnable {
 
     @Autowired
     TroubleTicketRepository ttRepo;
+    
+    @Autowired
+    MantisConnectService mantisConnectService = new MantisConnectService();
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -61,6 +65,8 @@ public class AlarmTroubleTicketService implements Runnable {
                 }
             } catch (InterruptedException ex) {
                 logger.error("[ThreadID:" + threadId + ",errorcode:1301,message:" + ex.getMessage());
+            } catch (Exception ex1){
+                logger.error("[ThreadID:" + threadId + ",errorcode:9999,message:" + ex1.getMessage());
             }
         }
     }
@@ -84,6 +90,13 @@ public class AlarmTroubleTicketService implements Runnable {
             if (alarmObject.ticketStatus().contains("close")) {
                 logger.warn("No open ticket match for this object = " + jsonMessage);
             } else {
+                BigInteger id = mantisConnectService.createTicket(tt);
+                if(id != null){ 
+                    tt.setExternalTicketID(id.toString());
+                    logger.info("WTT created  ("+id+"|" + tt.getTitle() + ")");
+                }else{
+                    logger.error("Error in WTT create  ("+id+"|" + tt.getTitle() + ")");
+                }
                 ttRepo.save(tt);
                 logger.info("Ticket created  (" + jsonMessage + ")");
             }
@@ -99,6 +112,13 @@ public class AlarmTroubleTicketService implements Runnable {
                 tt.addCDR(alarmObject.getEventCDR());
                 tt.closeTicket(alarmObject.getClearedTime());
                 tt.setLastTriggerBy(this.getClass().toString());
+                
+                boolean isClosed = mantisConnectService.closeTicket(tt);
+                if (isClosed){
+                    logger.info("WTT closed  ("+tt.getExternalTicketID()+"|" + tt.getTitle() + ")");
+                }else{
+                    logger.error("Error in WTT close  ("+tt.getExternalTicketID()+"|" + tt.getTitle() + ")");
+                }
                 ttRepo.save(tt);
 
                 try {
@@ -106,13 +126,15 @@ public class AlarmTroubleTicketService implements Runnable {
                 } catch (JsonProcessingException ex) {
                     jsonMessage = "Message Cannot translated";
                 }
-                logger.info("Ticket closed  (" + jsonMessage + ")");
+                
+                logger.info("Ticket closed [" + isClosed + "] - (" + jsonMessage + ")");
 
             }
         }
 
     }
     
+       
     @Scheduled(cron = "*/5 * * * * ?")
     public void syncTroubleTicketWithWTT(){
         

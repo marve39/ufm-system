@@ -44,6 +44,7 @@ public class NetactAlarmForwardingHandler extends IoHandlerAdapter {
              logger.info("Message sent to Enterprise Bus");
              logger.debug(mapper.writeValueAsString(alarmObject));
         } catch (Exception ex) {
+            logger.error(str);
             ex.printStackTrace();
         }
     }

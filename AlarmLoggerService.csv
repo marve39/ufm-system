@@ -1,0 +1,2 @@
+alarmnumber,severity,maintenanceRegion,siteName,dn,alarmText,startTime,clearedTime,intID,notifID,pcText,supplInfo,diagInfo,userInfo,objectName,alarmType
+1049115,W,MR-FNS,S1306,PLMN-PLMN/FLEXINS-402825/FUUT-SMMU_2,SGSN UNKNOWN IMSI,2017-01-24 12:24:38.0,,0,4368, Indeterminate, 0F 15 80 99 11 02 96 71 F5 01 00000008 0004, sfasfasfasfa fsafasfas fsafasfasfasf fsafasfasf, fffasfasfasf,null,null
